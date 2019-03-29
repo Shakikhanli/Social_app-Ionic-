@@ -1,0 +1,19 @@
+#images{
+    display: flex;
+    flex-wrap: wrap;
+    margin: 0 auto;
+    max-width: 100%;
+    width: 606px; //this is width of image row (3 image in each row)
+
+}
+//it is distance between images
+.image{
+   margin-left: 1px;
+   margin-right: 1px;
+}
+//these are image parameters
+.main-image, .user-image{
+    width: 100px;
+    height: 100px;
+
+}
