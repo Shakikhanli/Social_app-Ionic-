@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { AngularFireAuth } from '@angular/fire/auth';
 import { first } from 'rxjs/operators';
+import { auth } from 'firebase/app'
 
 interface user {
     username: string,
@@ -21,6 +22,23 @@ export class UserService{
 
     getUsername(): string{
         return this.user.username
+    }
+
+    /*
+    Because firebase don't let us change the passwor of old user we have to reAuthenticate it. 
+    In order to be able to do it we need username and old password of user
+    */
+    reAuth(username: string, password: string){
+       return this.afAuth.auth.currentUser.reauthenticateWithCredential(auth.EmailAuthProvider.credential(username + '@ulvi.com', password))
+    }
+
+    // This function provided by firebase so don't need new one
+    updatePassword(newpassword: string){
+      return this.afAuth.auth.currentUser.updatePassword(newpassword) 
+    }
+
+    updateEmail(newemail: string){
+        return this.afAuth.auth.currentUser.updateEmail(newemail+'@ulvi.com')
     }
 
 

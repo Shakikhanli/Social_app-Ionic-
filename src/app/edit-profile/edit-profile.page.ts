@@ -2,6 +2,8 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { Http } from '@angular/http';
 import { AngularFirestore, AngularFirestoreDocument } from '@angular/fire/firestore';
 import { UserService } from '../user.service';
+import { AlertController } from '@ionic/angular';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-edit-profile',
@@ -14,6 +16,9 @@ export class EditProfilePage implements OnInit {
   sub
   username: string
   profilePic: string
+  busy: boolean=false
+  password: string
+  newpassword: string
 
   //we need it to get reffrance to fileBtn
   @ViewChild('fileBtn') fileBtn: {
@@ -24,7 +29,9 @@ export class EditProfilePage implements OnInit {
   constructor(
     private http: Http, 
     private afs: AngularFirestore,
-    private user: UserService){ 
+    private user: UserService,
+    private router: Router,
+    private alertController: AlertController){ 
     this.mainuser = afs.doc(`user/${user.getUID()}`)
     this.sub = this.mainuser.valueChanges().subscribe(event => {
       this.username = event.username
@@ -63,6 +70,52 @@ export class EditProfilePage implements OnInit {
       })
 
     })
+  }
+
+  async presentAlert(title: string, content: string){
+    const alert = await this.alertController.create({
+      header: title,
+      message: content,
+      buttons: ['OK']
+    })
+
+    await alert.present()
+  }
+
+  async updateDetails(){
+    this.busy = true
+
+    if (!this.password){
+      return this.presentAlert('Error!', 'You have to enter a password')
+    }
+
+    try{
+      await this.user.reAuth(this.user.getUsername(), this.password)
+    }catch(error){
+      return this.presentAlert('Error!', 'Wrong Password')
+    } 
+    
+
+    if(this.newpassword){
+       await this.user.updatePassword(this.newpassword)
+    }
+
+    if(this.username !== this.user.getUsername()){
+      await this.user.updateEmail(this.username)
+      this.mainuser.update({
+        username: this.username
+      })
+    }
+
+    this.password = ""
+    this.newpassword = ""
+    this.busy = false
+
+    await this.presentAlert('Done!', 'Your profile is updated')
+
+    this.router.navigate(['tabs/feed'])
+
+
   }
 
 }
